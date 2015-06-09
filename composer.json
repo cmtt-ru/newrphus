@@ -1,0 +1,26 @@
+{
+    "name": "tjournal/newrphus",
+    "description": "Newrphus — misprints reporting engine",
+    "keywords": ["misprint", "slack"],
+    "homepage": "http://github.com/tjournal/newrphus",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ilya Chekalskiy",
+            "email": "ilya@chekalskiy.ru",
+            "homepage": "https://chekalskiy.ru/"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "maknz/slack": "~1.7",
+        "psr/log": "~1.0"
+    },
+    "suggest": {
+        "monolog/monolog": "Monolog sends your logs to files, sockets, inboxes, databases and various web services"
+    },
+    "autoload": {
+        "psr-4": {"TJ\\": "src/"}
+    }
+}
