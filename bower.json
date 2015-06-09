@@ -1,0 +1,12 @@
+{
+    "name": "newrphus",
+    "description": "Newrphus — misprints reporting engine",
+    "keywords": ["misprints", "slack"],
+    "license": "MIT",
+    "main": "newrphus.js",
+    "moduleType": "globals",
+    "ignore": [
+        "*",
+        "!newrphus.js"
+    ]
+}
