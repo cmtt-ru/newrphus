@@ -1,12 +1,12 @@
 # Newrphus
-Let users send misprints from your website.
+Let users send misprints from your website to Slack.
 
 [![License](https://poser.pugx.org/tjournal/newrphus/license)](https://packagist.org/packages/tjournal/newrphus)
 [![Latest Stable Version](https://poser.pugx.org/tjournal/newrphus/v/stable)](https://packagist.org/packages/tjournal/newrphus)
 
 Library contains PHP back-end library and Javascript front-end file. You should use both of them to make misprint reporter works.
 
-When user selects text on a page and presses <kbd>Ctrl+Enter</kbd>, the Newrphus sends POST request to `url`. You can also include `userId` parameter to track users. Right after the keypress event, it calls `callback` function.
+When user selects text on a page and presses <kbd>Ctrl+Enter</kbd>, the Newrphus sends POST request to `url`. You can also include `userId` parameter to track users. Right after the keypress event, it calls `callback` function, where you can tell user that report was sent.
 
 ## How to use
 1. [Create new Incoming webhook](https://slack.com/services/new/incoming-webhook) in Slack.
