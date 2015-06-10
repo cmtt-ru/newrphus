@@ -14,21 +14,24 @@ When user selects text on a page and presses <kbd>Ctrl+Enter</kbd>, the Newrphus
 3. Use `example.php` and create backend handler for JS Ajax call.
     ```php
     $newrphus = new TJ\Newrphus();
-    $reviewer->setSlackSettings(['endpoint' => 'https://hooks.slack.com/services/ABCDE/QWERTY', 'channel' => '#misprints']);
+    $reviewer->setSlackSettings([
+        'endpoint' => 'https://hooks.slack.com/services/ABCDE/QWERTY',
+        'channel' => '#misprints'
+    ]);
     $reviewer->report($_POST);
     ```
 
 4. Include js to the page, where you want to track misprints.
     ```html
-    <script src="newrphus.js"></script>
+    <script src="js/newrphus.js"></script>
     <script>
-        newrphus.init({
-            url: 'example.php',
-            userId: 12345,
-            callback: function(res) {
-                alert(res);
-            }
-        });
+      newrphus.init({
+        url: 'example.php',
+        userId: 12345,
+        callback: function() {
+          alert('Misprint sent');
+        }
+      });
     </script>
     ```
 

@@ -7,6 +7,6 @@
     "moduleType": "globals",
     "ignore": [
         "*",
-        "!newrphus.js"
+        "!js/newrphus.js"
     ]
 }

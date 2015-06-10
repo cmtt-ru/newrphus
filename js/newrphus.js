@@ -1,7 +1,7 @@
 window.newrphus = window.newrphus || function() {
   var options = {};
   var defaultOptions = {
-    url: 'newrphus.php',
+    url: 'example.php',
     callback: function() {
       alert('Thank you! Misprint was sent');
     },
