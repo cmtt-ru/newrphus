@@ -1,5 +1,5 @@
 <?php
-require 'src/Newrphus.php';
+require 'vendor/autoload.php';
 
 $newrphus = new TJ\Newrphus;
 $newrphus->setSlackSettings(['endpoint' => 'https://hooks.slack.com/services/ABCDE/12345', 'channel' => '#misprints']);

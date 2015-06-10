@@ -10,7 +10,7 @@ When user selects text on a page and presses <kbd>Ctrl+Enter</kbd>, the Newrphus
 
 ## How to use
 1. [Create new Incoming webhook](https://slack.com/services/new/incoming-webhook) in Slack.
-2. Install PHP library with [Composer](#Installing-via-Composer). Or you can simply `include` file.
+2. Install PHP library with [Composer](#installing-via-composer).
 3. Use `example.php` and create backend handler for JS Ajax call.
     ```php
     $newrphus = new TJ\Newrphus();
