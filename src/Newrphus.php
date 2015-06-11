@@ -269,9 +269,9 @@ class Newrphus
         $misprintText = mb_substr($misprintText, 0, 1000);
 
         if ($this->messageText) {
-            $pretext = $this->messageText;
+            $text = $this->messageText;
         } else {
-            $pretext = $misprintText;
+            $text = $misprintText;
         }
 
         $fields = [];
@@ -294,9 +294,8 @@ class Newrphus
             $slack->attach([
                 'fallback' => $fallback,
                 'color' => $this->color,
-                'pretext' => $pretext,
                 'fields' => $fields
-            ])->send();
+            ])->send($text);
 
             return true;
         } catch (Exception $e) {
