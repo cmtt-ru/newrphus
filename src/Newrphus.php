@@ -145,7 +145,11 @@ class Newrphus
                 $urlInfo = ['title' => 'URL', 'value' => $misprintData['misprintUrl'], 'short' => true];
 
                 if (is_callable($this->urlAnalysis)) {
-                    $urlInfo = call_user_func($this->urlAnalysis, $misprintData['misprintUrl']);
+                    $result = call_user_func($this->urlAnalysis, $misprintData['misprintUrl']);
+
+                    if ($result && is_array($result) && isset($result['title']) && isset($result['value'])) {
+                        $urlInfo = $result;
+                    }
                 }
             }
 
@@ -153,17 +157,19 @@ class Newrphus
                 $userInfo = ['title' => 'User ID', 'value' => $misprintData['misprintUserId'], 'short' => true];
 
                 if (is_callable($this->userIdAnalysis)) {
-                    $userInfo = call_user_func($this->userIdAnalysis, $misprintData['misprintUserId']);
+                    $result = call_user_func($this->userIdAnalysis, $misprintData['misprintUserId']);
+
+                    if ($result && is_array($result) && isset($result['title']) && isset($result['value'])) {
+                        $userInfo = $result;
+                    }
                 }
             }
 
-            $this->sendToSlack([
+            return $this->sendToSlack([
                 'urlInfo' => $urlInfo,
                 'userInfo' => $userInfo,
                 'misprint' => $misprintData['misprintText']
             ]);
-
-            return true;
         } catch (Exception $e) {
             if ($this->logger) {
                 $this->logger->debug('Newrphus: antiflood: ' . $e->getMessage());
@@ -285,6 +291,8 @@ class Newrphus
             if ($this->logger) {
                 $this->logger->error('Newrphus: exception while sending misprint', ['exception' => $e]);
             }
+
+            return false;
         }
 
         return true;
