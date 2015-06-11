@@ -6,6 +6,8 @@ Let users send misprints from your website to Slack.
 
 Library contains PHP back-end library and Javascript front-end file. You should use both of them to make misprint reporter works.
 
+![How it works](http://i.imgur.com/zYoWcat.png)
+
 When user selects text on a page and presses <kbd>Ctrl+Enter</kbd>, the Newrphus sends POST request to `url`. You can also include `userId` parameter to track users. Right after the keypress event, it calls `callback` function, where you can tell user that report was sent.
 
 ## How to use
