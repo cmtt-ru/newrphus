@@ -64,7 +64,7 @@ window.newrphus = window.newrphus || function() {
     if (text !== undefined && text.length <= options.maxLength && text.length >= options.minLength) {
       options.callback();
 
-      ajaxPost(options.url, {misprintText: text, misprintUrl: window.location.href ? window.location.href : '', misprintUserId: parseInt(options.userId)});
+      ajaxPost(options.url, {misprintText: text, misprintUrl: window.location.href ? window.location.href : '', misprintUserId: options.userId});
     }
   }
 

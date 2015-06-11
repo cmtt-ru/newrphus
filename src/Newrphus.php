@@ -18,11 +18,12 @@ class Newrphus
     public $headers = ['HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'];
 
     /**
-     * How many misprints will be accepted from one IP address before it will be banned
+     * How many misprints will be accepted from one IP address
+     * per 10 minutes before it will be banned
      *
      * @var integer
      */
-    public $attemptsThreshold = 20;
+    public $attemptsThreshold = 10;
 
     /**
      * Color of attachments field in Slack message
@@ -42,11 +43,25 @@ class Newrphus
     protected $slackSettings;
 
     /**
-     * Fallback text
+     * Slack notification text
      *
      * @var string
      */
-    protected $fallback;
+    protected $notificationText;
+
+    /**
+     * Slack message text
+     *
+     * @var string
+     */
+    protected $messageText;
+
+    /**
+     * Slack message fields
+     *
+     * @var array
+     */
+    protected $fields = [];
 
     /**
      * Memcached instance
@@ -61,20 +76,6 @@ class Newrphus
      * @var LoggerInterface
      */
     protected $logger;
-
-    /**
-     * URL analysis function
-     *
-     * @var function
-     */
-    protected $urlAnalysis;
-
-    /**
-     * User ID analysis function
-     *
-     * @var function
-     */
-    protected $userIdAnalysis;
 
     /**
      * Slack options setter
@@ -116,40 +117,46 @@ class Newrphus
     }
 
     /**
-     * URL analysis setter
+     * Add field to Slack message
      *
-     * @param  function $function
+     * @param  string      $title
+     * @param  string      $value
+     * @param  boolean     $short
      * @return TJ\Newrphus
      */
-    public function setURLAnalysis($function)
+    public function addField($title, $value, $short = false)
     {
-        $this->urlAnalysis = $function;
+        array_push($this->fields, [
+            'title' => $title,
+            'value' => $value,
+            'short' => (bool) $short
+        ]);
 
         return $this;
     }
 
     /**
-     * User ID analysis setter
+     * Custom notification text setter
      *
-     * @param  function $function
+     * @param  string      $notificationText
      * @return TJ\Newrphus
      */
-    public function setUserIdAnalysis($function)
+    public function setNotificationText($notificationText)
     {
-        $this->userIdAnalysis = $function;
+        $this->notificationText = $notificationText;
 
         return $this;
     }
 
     /**
-     * Custom fallback text setter
+     * Slack mesage text setter
      *
-     * @param  string      $fallback
+     * @param  string      $messageText
      * @return TJ\Newrphus
      */
-    public function setCustomFallback($fallback)
+    public function setMessageText($messageText)
     {
-        $this->fallback = $fallback;
+        $this->messageText = $messageText;
 
         return $this;
     }
@@ -160,43 +167,12 @@ class Newrphus
      * @param  array misprintData
      * @return boolean
      */
-    public function report($misprintData)
+    public function report($misprintText)
     {
         try {
-            $this->floodProtect(md5($misprintData['misprintText']));
+            $this->floodProtect(md5($misprintText));
 
-            $urlInfo = null;
-            $userInfo = null;
-
-            if (isset($misprintData['misprintUrl'])) {
-                $urlInfo = ['title' => 'URL', 'value' => $misprintData['misprintUrl'], 'short' => true];
-
-                if (is_callable($this->urlAnalysis)) {
-                    $result = call_user_func($this->urlAnalysis, $misprintData['misprintUrl']);
-
-                    if ($result && is_array($result) && isset($result['title']) && isset($result['value'])) {
-                        $urlInfo = $result;
-                    }
-                }
-            }
-
-            if (isset($misprintData['misprintUserId']) && $misprintData['misprintUserId'] > 0) {
-                $userInfo = ['title' => 'User ID', 'value' => $misprintData['misprintUserId'], 'short' => true];
-
-                if (is_callable($this->userIdAnalysis)) {
-                    $result = call_user_func($this->userIdAnalysis, $misprintData['misprintUserId']);
-
-                    if ($result && is_array($result) && isset($result['title']) && isset($result['value'])) {
-                        $userInfo = $result;
-                    }
-                }
-            }
-
-            return $this->sendToSlack([
-                'urlInfo' => $urlInfo,
-                'userInfo' => $userInfo,
-                'misprint' => $misprintData['misprintText']
-            ]);
+            return $this->sendToSlack($misprintText);
         } catch (Exception $e) {
             if ($this->logger) {
                 $this->logger->debug('Newrphus: antiflood: ' . $e->getMessage());
@@ -265,12 +241,12 @@ class Newrphus
     /**
      * Send misprint report to Slack
      *
-     * @param  array   $data
-     * @return boolean successful sending
+     * @param  string  $misprintText
+     * @return boolean
      */
-    public function sendToSlack($data)
+    protected function sendToSlack($misprintText)
     {
-        if (!is_array($data) || !count($data)) {
+        if (empty($misprintText)) {
             return false;
         }
 
@@ -290,23 +266,27 @@ class Newrphus
             $config['channel'] = $this->slackSettings['channel'];
         }
 
-        $misprintText = mb_substr($data['misprint'], 0, 1000);
+        $misprintText = mb_substr($misprintText, 0, 1000);
+
+        if ($this->messageText) {
+            $pretext = $this->messageText;
+        } else {
+            $pretext = $misprintText;
+        }
 
         $fields = [];
-
-        if ($data['urlInfo']) {
-            array_push($fields, $data['urlInfo']);
+        if (count($this->attachments)) {
+            foreach ($this->attachments as $attachment) {
+                if (is_array($attachment) && isset($attachment['title']) && isset($attachment['value'])) {
+                    array_push($fields, $attachment);
+                }
+            }
         }
 
-        if ($data['userInfo']) {
-            array_push($fields, $data['userInfo']);
-        }
-
-        if ($this->fallback) {
-            $fallback = $this->fallback;
-            $this->fallback = null;
+        if ($this->notificationText) {
+            $fallback = $this->notificationText;
         } else {
-            $fallback = "{$misprintText}";
+            $fallback = $misprintText;
         }
 
         try {
@@ -314,17 +294,17 @@ class Newrphus
             $slack->attach([
                 'fallback' => $fallback,
                 'color' => $this->color,
-                'pretext' => $misprintText,
+                'pretext' => $pretext,
                 'fields' => $fields
             ])->send();
+
+            return true;
         } catch (Exception $e) {
             if ($this->logger) {
                 $this->logger->error('Newrphus: exception while sending misprint', ['exception' => $e]);
             }
-
-            return false;
         }
 
-        return true;
+        return false;
     }
 }

@@ -20,33 +20,24 @@ $memcached->addServer('localhost', '11211');
 $newrphus->setMemcached($memcached);
 */
 
-// If you want to process user IDs, specify the callback function
-$newrphus->setUserIdAnalysis(function($userId) {
-    // Here you might want to get username by user ID
-    $username = "Username {$userId}";
+// You can add multiple additional fields to message (optional)
+$userId = intval($_POST['misprintUserId']);
+$url = $_POST['misprintUrl'];
 
-    // Callback function must return Slack attachment
-    return [
-        'title' => 'Username',
-        'value' => $username,
-        'short' => true
-    ];
-});
-
-// If you want to process page URL, specify the callback function
-$newrphus->setURLAnalysis(function($url) {
-    return [
-        'title' => 'Page',
-        'value' => $url,
-        'short' => true
-    ];
-});
-
-// You can also set custom text for Slack notifications
-$newrphus->setCustomFallback("Hey, @user, new misprint: {$_POST['misprintText']}");
-
-$result = $newrphus->report([
-    'misprintText' => $_POST['misprintText'],
-    'misprintUrl' => $_POST['misprintUrl'],
-    'misprintUserId' => $_POST['misprintUserId']
+$newrphus->addField([
+    'title' => 'User ID',
+    'value' => $userId,
+    'short' => true
+])->addField([
+    'title' => 'Page url',
+    'value' => $url,
+    'short' => true
 ]);
+
+// You can also set custom text for Slack notifications (optional)
+$newrphus->setNotificationText("Hey, @user, new misprint: {$_POST['misprintText']}");
+
+// And customize Slack message text (optional)
+$newrphus->setMessageText("New misprint: {$_POST['misprintText']}");
+
+$result = $newrphus->report($_POST['misprintText']);
