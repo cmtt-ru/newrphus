@@ -42,6 +42,9 @@ $newrphus->setURLAnalysis(function($url) {
     ];
 });
 
+// You can also set custom text for Slack notifications
+$newrphus->setCustomFallback("Hey, @user, new misprint: {$_POST['misprintText']}");
+
 $result = $newrphus->report([
     'misprintText' => $_POST['misprintText'],
     'misprintUrl' => $_POST['misprintUrl'],

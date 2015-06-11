@@ -35,6 +35,13 @@ class Newrphus
     protected $slackSettings;
 
     /**
+     * Fallback text
+     *
+     * @var string
+     */
+    protected $fallback;
+
+    /**
      * Memcached instance
      *
      * @var Memcached
@@ -123,6 +130,19 @@ class Newrphus
     public function setUserIdAnalysis($function)
     {
         $this->userIdAnalysis = $function;
+
+        return $this;
+    }
+
+    /**
+     * Custom fallback text setter
+     *
+     * @param  string      $fallback
+     * @return TJ\Newrphus
+     */
+    public function setCustomFallback($fallback)
+    {
+        $this->fallback = $fallback;
 
         return $this;
     }
@@ -275,10 +295,17 @@ class Newrphus
             array_push($fields, $data['userInfo']);
         }
 
+        if ($this->fallback) {
+            $fallback = $this->fallback;
+            $this->fallback = null;
+        } else {
+            $fallback = "{$misprintText}";
+        }
+
         try {
             $slack = new Slack($this->slackSettings['endpoint'], $config);
             $slack->attach([
-                'fallback' => "Misprint: {$misprintText}",
+                'fallback' => $fallback,
                 'color' => '#cccccc',
                 'pretext' => $misprintText,
                 'fields' => $fields
