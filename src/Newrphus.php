@@ -25,6 +25,13 @@ class Newrphus
     public $attemptsThreshold = 20;
 
     /**
+     * Color of attachments field in Slack message
+     *
+     * @var string
+     */
+    public $color = '#cccccc';
+
+    /**
      * List of Slack settings
      *
      * - string  $endpoint  required  Slack hook endpoint
@@ -306,7 +313,7 @@ class Newrphus
             $slack = new Slack($this->slackSettings['endpoint'], $config);
             $slack->attach([
                 'fallback' => $fallback,
-                'color' => '#cccccc',
+                'color' => $this->color,
                 'pretext' => $misprintText,
                 'fields' => $fields
             ])->send();
