@@ -33,4 +33,4 @@ $newrphus->setNotificationText("Hey, @user, new misprint: {$_POST['misprintText'
 // And customize Slack message text (optional)
 $newrphus->setMessageText("New misprint: {$_POST['misprintText']}");
 
-$result = $newrphus->report($_POST['misprintText']);
+$result = $newrphus->report($_POST['misprintText'], $_POST['misprintUrl']);

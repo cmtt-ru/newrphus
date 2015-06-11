@@ -164,15 +164,16 @@ class Newrphus
     /**
      * Report about misprint
      *
-     * @param  array misprintData
+     * @param  string  misprintText
+     * @param  string  misprintUrl
      * @return boolean
      */
-    public function report($misprintText)
+    public function report($misprintText, $misprintUrl = null)
     {
         try {
             $this->floodProtect(md5($misprintText));
 
-            return $this->sendToSlack($misprintText);
+            return $this->sendToSlack($misprintText, $misprintUrl);
         } catch (Exception $e) {
             if ($this->logger) {
                 $this->logger->debug('Newrphus: antiflood: ' . $e->getMessage());
@@ -242,9 +243,10 @@ class Newrphus
      * Send misprint report to Slack
      *
      * @param  string  $misprintText
+     * @param  string  $misprintUrl
      * @return boolean
      */
-    protected function sendToSlack($misprintText)
+    protected function sendToSlack($misprintText, $misprintUrl)
     {
         if (empty($misprintText)) {
             return false;
@@ -258,6 +260,7 @@ class Newrphus
             return false;
         }
 
+        // Slack config
         $config = [
             'username' => 'Newrphus'
         ];
@@ -266,20 +269,15 @@ class Newrphus
             $config['channel'] = $this->slackSettings['channel'];
         }
 
-        $misprintText = mb_substr($misprintText, 0, 1000);
+        $misprintText = trim(mb_substr($misprintText, 0, 1000));
 
         if ($this->messageText) {
             $text = $this->messageText;
         } else {
             $text = $misprintText;
-        }
 
-        $fields = [];
-        if (count($this->fields)) {
-            foreach ($this->fields as $field) {
-                if (is_array($field) && isset($field['title']) && isset($field['value'])) {
-                    array_push($fields, $field);
-                }
+            if (!empty($misprintUrl)) {
+                $text .= "\n<{$misprintUrl}|Link>";
             }
         }
 
@@ -291,11 +289,16 @@ class Newrphus
 
         try {
             $slack = new Slack($this->slackSettings['endpoint'], $config);
-            $slack->attach([
-                'fallback' => $fallback,
-                'color' => $this->color,
-                'fields' => $fields
-            ])->send($text);
+
+            if (count($this->fields)) {
+                $slack->attach([
+                    'fallback' => $fallback,
+                    'color' => $this->color,
+                    'fields' => $this->fields
+                ]);
+            }
+
+            $slack->send($text);
 
             return true;
         } catch (Exception $e) {

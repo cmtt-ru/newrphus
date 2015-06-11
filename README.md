@@ -20,7 +20,7 @@ When user selects text on a page and presses <kbd>Ctrl+Enter</kbd>, the Newrphus
         'endpoint' => 'https://hooks.slack.com/services/ABCDE/QWERTY',
         'channel' => '#misprints'
     ]);
-    $reviewer->report($_POST['misprintText']);
+    $reviewer->report($_POST['misprintText'], $_POST['misprintUrl']);
     ```
 
     If you want to customize Slack message, see `example.php`.
