@@ -265,12 +265,7 @@ class Newrphus
 
         $misprintText = mb_substr($data['misprint'], 0, 1000);
 
-        $fields = [
-            [
-                'title' => 'Misprint',
-                'value' => $misprintText
-            ]
-        ];
+        $fields = [];
 
         if ($data['urlInfo']) {
             array_push($fields, $data['urlInfo']);
@@ -285,6 +280,7 @@ class Newrphus
             $slack->attach([
                 'fallback' => "Misprint: {$misprintText}",
                 'color' => '#cccccc',
+                'pretext' => $misprintText,
                 'fields' => $fields
             ])->send();
         } catch (Exception $e) {
