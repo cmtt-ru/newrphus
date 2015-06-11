@@ -24,15 +24,8 @@ $newrphus->setMemcached($memcached);
 $userId = intval($_POST['misprintUserId']);
 $url = $_POST['misprintUrl'];
 
-$newrphus->addField([
-    'title' => 'User ID',
-    'value' => $userId,
-    'short' => true
-])->addField([
-    'title' => 'Page url',
-    'value' => $url,
-    'short' => true
-]);
+$newrphus->addField('User ID', $userId, true)
+         ->addField('Page url', $url, true);
 
 // You can also set custom text for Slack notifications (optional)
 $newrphus->setNotificationText("Hey, @user, new misprint: {$_POST['misprintText']}");

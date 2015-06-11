@@ -275,10 +275,10 @@ class Newrphus
         }
 
         $fields = [];
-        if (count($this->attachments)) {
-            foreach ($this->attachments as $attachment) {
-                if (is_array($attachment) && isset($attachment['title']) && isset($attachment['value'])) {
-                    array_push($fields, $attachment);
+        if (count($this->fields)) {
+            foreach ($this->fields as $field) {
+                if (is_array($field) && isset($field['title']) && isset($field['value'])) {
+                    array_push($fields, $field);
                 }
             }
         }
