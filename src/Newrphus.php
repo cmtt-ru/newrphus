@@ -291,7 +291,7 @@ class Newrphus
             $slack = new Slack($this->slackSettings['endpoint'], $config);
 
             if (count($this->fields)) {
-                $slack->attach([
+                $slack = $slack->attach([
                     'fallback' => $fallback,
                     'color' => $this->color,
                     'fields' => $this->fields
