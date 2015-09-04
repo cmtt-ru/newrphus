@@ -262,7 +262,8 @@ class Newrphus
 
         // Slack config
         $config = [
-            'username' => 'Newrphus'
+            'username' => 'Newrphus',
+            'link_names' => true
         ];
 
         if (isset($this->slackSettings['channel'])) {
