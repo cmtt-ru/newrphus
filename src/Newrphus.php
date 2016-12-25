@@ -3,6 +3,7 @@ namespace TJ;
 
 use Exception;
 use Maknz\Slack\Client as Slack;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -66,9 +67,18 @@ class Newrphus
     /**
      * Memcached instance
      *
+     * @deprecated
+     *
      * @var Memcached
      */
     protected $memcached;
+
+    /**
+     * PSR-6 compatible cache pool
+     *
+     * @var CacheItemPoolInterface
+     */
+    protected $cache;
 
     /**
      * Logger instance
@@ -108,6 +118,7 @@ class Newrphus
     /**
      * Memcached setter
      *
+     * @deprecated
      *
      * @param Memcached $memcached
      *
@@ -116,6 +127,20 @@ class Newrphus
     public function setMemcached($memcached)
     {
         $this->memcached = $memcached;
+
+        return $this;
+    }
+
+    /**
+     * Cache setter
+     *
+     * @param CacheItemPoolInterface $cache
+     *
+     * @return Newrphus
+     */
+    public function setCache($cache)
+    {
+        $this->cache = $cache;
 
         return $this;
     }
@@ -171,8 +196,8 @@ class Newrphus
     /**
      * Report about misprint
      *
-     * @param  string  misprintText
-     * @param  string  misprintUrl
+     * @param  string  misprintText Used for antflood protection and as a fallback if message doesn't provided
+     * @param  string  misprintUrl  URL where misprint was found
      *
      * @return bool
      */
@@ -202,32 +227,59 @@ class Newrphus
      */
     protected function floodProtect($misprintHash)
     {
-        if (!$this->memcached) {
+        if (!$this->memcached && !$this->cache) {
             return false;
         }
 
         $ip = $this->getIP();
 
         if ($ip !== false) {
-            $mcIpHash = 'newrphus:byIP:' . md5($ip);
-            $attemptsCount = $this->memcached->get($mcIpHash);
-            if ($this->memcached->getResultCode() === 0) {
-                if ($attemptsCount > $this->attemptsThreshold) {
+            $ipHash = 'newrphus/byIP/' . md5($ip);
+            $textHash = 'newrphus/byText/' . $misprintHash;
+
+            if ($this->cache) {
+                $ipItem = $this->cache->getItem($ipHash);
+                $textItem = $this->cache->getItem($textHash);
+
+                $attemptsCount = $ipItem->get();
+                if ($attemptsCount !== null && (int) $attemptsCount > $this->attemptsThreshold) {
                     throw new Exception("Too many attempts", 429);
+                } else {
+                    $ipItem->lock();
+
+                    if ($ipItem->isMiss()) {
+                        $ipItem->expiresAfter(300);
+                    }
+
+                    $this->cache->save($ipItem->set((int) $attemptsCount + 1));
                 }
-                $this->memcached->increment($mcIpHash);
+
+                if ($textItem->isHit()) {
+                    throw new Exception("This misprint already was sent", 202);
+                } else {
+                    $this->cache->save($textItem->expiresAfter(300)->set(true));
+                }
             } else {
-                $this->memcached->set($mcIpHash, 1, 300);
+                $attemptsCount = $this->memcached->get($ipHash);
+
+                if ($this->memcached->getResultCode() === 0) {
+                    if ($attemptsCount > $this->attemptsThreshold) {
+                        throw new Exception("Too many attempts", 429);
+                    }
+
+                    $this->memcached->increment($ipHash);
+                } else {
+                    $this->memcached->set($ipHash, 1, 300);
+                }
+
+                $this->memcached->get($textHash);
+                if ($this->memcached->getResultCode() === 0) {
+                    throw new Exception("This misprint already was sent", 202);
+                }
+
+                $this->memcached->set($textHash, true, 300);
             }
         }
-
-        $mcTextHash = 'newrphus:byText:' . $misprintHash;
-        $this->memcached->get($mcTextHash);
-        if ($this->memcached->getResultCode() === 0) {
-            throw new Exception("This misprint already was sent", 202);
-        }
-
-        $this->memcached->set($mcTextHash, true, 300);
 
         return true;
     }
