@@ -21,7 +21,7 @@ class Newrphus
      * How many misprints will be accepted from one IP address
      * per 10 minutes before it will be banned
      *
-     * @var integer
+     * @var int
      */
     public $attemptsThreshold = 10;
 
@@ -80,8 +80,9 @@ class Newrphus
     /**
      * Slack options setter
      *
-     * @param  array       $slackSettings e.g. [ 'endpoint' => 'https://hook.slack.com/...', 'channel' => '#misprints' ]
-     * @return TJ\Newrphus
+     * @param array $slackSettings e.g. [ 'endpoint' => 'https://hook.slack.com/...', 'channel' => '#misprints' ]
+     *
+     * @return Newrphus
      */
     public function setSlackSettings($slackSettings)
     {
@@ -93,8 +94,9 @@ class Newrphus
     /**
      * PSR-3 compatible logger setter
      *
-     * @param  LoggerInterface $logger
-     * @return TJ\Newrphus
+     * @param LoggerInterface $logger
+     *
+     * @return Newrphus
      */
     public function setLogger(LoggerInterface $logger)
     {
@@ -106,8 +108,10 @@ class Newrphus
     /**
      * Memcached setter
      *
-     * @param  Memcached $memcached
-     * @return TJ\Newrphus
+     *
+     * @param Memcached $memcached
+     *
+     * @return Newrphus
      */
     public function setMemcached($memcached)
     {
@@ -117,12 +121,41 @@ class Newrphus
     }
 
     /**
-     * Add field to Slack message
+     * Slack mesage text setter
      *
-     * @param  string      $title
-     * @param  string      $value
-     * @param  boolean     $short
-     * @return TJ\Newrphus
+     * @param string $messageText
+     *
+     * @return Newrphus
+     */
+    public function setMessageText($messageText)
+    {
+        $this->messageText = $messageText;
+
+        return $this;
+    }
+
+    /**
+     * Custom Slack notification text setter
+     *
+     * @param string $notificationText
+     *
+     * @return Newrphus
+     */
+    public function setNotificationText($notificationText)
+    {
+        $this->notificationText = $notificationText;
+
+        return $this;
+    }
+
+    /**
+     * Add custom field to Slack message
+     *
+     * @param string $title
+     * @param string $value
+     * @param bool   $short
+     *
+     * @return Newrphus
      */
     public function addField($title, $value, $short = false)
     {
@@ -136,37 +169,12 @@ class Newrphus
     }
 
     /**
-     * Custom notification text setter
-     *
-     * @param  string      $notificationText
-     * @return TJ\Newrphus
-     */
-    public function setNotificationText($notificationText)
-    {
-        $this->notificationText = $notificationText;
-
-        return $this;
-    }
-
-    /**
-     * Slack mesage text setter
-     *
-     * @param  string      $messageText
-     * @return TJ\Newrphus
-     */
-    public function setMessageText($messageText)
-    {
-        $this->messageText = $messageText;
-
-        return $this;
-    }
-
-    /**
      * Report about misprint
      *
      * @param  string  misprintText
      * @param  string  misprintUrl
-     * @return boolean
+     *
+     * @return bool
      */
     public function report($misprintText, $misprintUrl = null)
     {
@@ -186,9 +194,11 @@ class Newrphus
     /**
      * Flood protection with Memcached
      *
-     * @param  string $misprintHash
+     * @param string $misprintHash
+     *
      * @throws Exception if report is flood-positive
-     * @return boolean
+     *
+     * @return bool
      */
     protected function floodProtect($misprintHash)
     {
@@ -197,6 +207,7 @@ class Newrphus
         }
 
         $ip = $this->getIP();
+
         if ($ip !== false) {
             $mcIpHash = 'newrphus:byIP:' . md5($ip);
             $attemptsCount = $this->memcached->get($mcIpHash);
@@ -224,7 +235,7 @@ class Newrphus
     /**
      * Get user IP address
      *
-     * @return string|boolean
+     * @return string|bool
      */
     protected function getIP()
     {
@@ -242,9 +253,10 @@ class Newrphus
     /**
      * Send misprint report to Slack
      *
-     * @param  string  $misprintText
-     * @param  string  $misprintUrl
-     * @return boolean
+     * @param string $misprintText
+     * @param string $misprintUrl
+     *
+     * @return bool
      */
     protected function sendToSlack($misprintText, $misprintUrl)
     {
