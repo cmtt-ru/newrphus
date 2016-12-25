@@ -14,10 +14,11 @@ $newrphus->setLogger($monolog);
 
 // Uncomment if you want to use Memcached for antiflood protection
 /*
-$memcached = new Memcached();
-$memcached->addServer('localhost', '11211');
+$driver = new Stash\Driver\Memcache(['servers' => ['127.0.0.1', '11211']]);
 
-$newrphus->setMemcached($memcached);
+$pool = new Stash\Pool($driver);
+
+$newrphus->setCache($pool);
 */
 
 // You can add multiple additional fields to message (optional)

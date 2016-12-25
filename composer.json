@@ -13,12 +13,14 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
         "maknz/slack": "~1.7",
+        "php": ">=5.4.0",
+        "psr/cache": "~1.0",
         "psr/log": "~1.0"
     },
     "suggest": {
-        "monolog/monolog": "Monolog sends your logs to files, sockets, inboxes, databases and various web services"
+        "monolog/monolog": "Monolog sends your logs to files, sockets, inboxes, databases and various web services",
+        "tedivm/stash": "Stash is a PHP caching library with a support of PSR-6, Memcached, Redis, APC and other cache drivers"
     },
     "autoload": {
         "psr-4": {"TJ\\": "src/"}
