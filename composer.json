@@ -14,7 +14,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "maknz/slack": "~1.7",
+        "alek13/slack": "^1.10",
         "psr/log": "~1.0"
     },
     "suggest": {
